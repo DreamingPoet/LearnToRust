@@ -386,27 +386,145 @@ mod input_functions {
 // 9.2.5. As output parameters
 
 mod as_output_parameters {
-    pub fn mod_main() {}
+    // Anonymous closure types are unknown so we have to use impl trait to return them.
+    // The valid traits for returning a closure are
+    // Fn, FnMut, FnOnce
+    // Beyond this, the move keyword must be used, which signals that all captures occur
+    // by value. This is required because any captures by reference would be dropped
+    // as soon as the function exited, leaving invalid reference in the closure.
+    fn create_fn() -> impl Fn() {
+        let text = "Fn".to_owned();
+
+        move || println!("This is a : {}", text)
+    } 
+
+    fn create_fnmut() -> impl FnMut() {
+        let text = "FnMut".to_owned();
+    
+        move || println!("This is a: {}", text)
+    }
+    
+    fn create_fnonce() -> impl FnOnce() {
+        let text = "FnOnce".to_owned();
+    
+        move || println!("This is a: {}", text)
+    }
+
+    pub fn mod_main() {
+        let fn_plain = create_fn();
+        let mut fn_mut = create_fnmut();
+        let fn_once = create_fnonce();
+    
+        fn_plain();
+        fn_mut();
+        fn_once();
+
+    }
 }
 // 9.2.6. Examples in std
 mod examples_in_std {
-    pub fn mod_main() {}
+    pub fn mod_main() {
+        // empty
+    }
 }
 // 9.2.6.1. Iterator::any
 mod iterator_any {
-    pub fn mod_main() {}
+    // Iterator::any is a function which when passed an iterator, will return true
+    // if any element satisfies the predicate.
+    // Otherwise false. It's signature:
+
+    ///  ```
+    /// pub trait Iterator {
+    /// // The type being iterated over
+    /// type Item;
+    /// // `any` takes `&mut self` meaning the caller may be borrowed
+    /// // and modified, but not consumed.
+    /// fn any<F>(&mut self, f:F) -> bool where
+    ///     // `FnMut` meaning any captured variable may at most be
+    ///     // modified, not consumed. `Self::Item` states it takes
+    ///     // arguments to the closure by value.
+    ///     F: FnMut(Self::Item) -> bool;
+    /// }
+    /// 
+    ///  ```
+
+    pub fn mod_main() {
+        let vec1 = vec![1, 4, 3];
+        // `iter()` for vecs yieds `&i32`. `&x` destructure to `i32`. 
+        println!("2 is in vec1 ? {}", vec1.iter().      any(|&x| x == 2));
+
+        // `iter()` only borrows `vec1` and its elements, so they can be used again.
+        println!("vec1 len : {}", vec1.len());
+        println!("first element of vec1 is : {}", vec1[0]);
+        
+        // `into_iter()` for vecs yieds `i32`. No destructuring required.
+        println!("2 is in vec1 ? {}", vec1.into_iter(). any(|x| x == 2));
+        
+        // `into_iter()` does move `vec1` and it's elements, so they cannot be used again
+        // println!("vec1 len : {}", vec1.len());
+
+        let array1 = [1, 2, 3];
+        let array2 = [4, 5, 6];
+    
+        // `iter()` for arrays yields `&i32`.
+        println!("2 in array1: {}", array1.iter()     .any(|&x| x == 2));
+        // `into_iter()` for arrays yields `i32`.
+        println!("2 in array2: {}", array2.into_iter().any(|x| x == 2));
+    }
 }
 // 9.2.6.2. Searching through iterators
 mod searching_through_iterators {
-    pub fn mod_main() {}
+    use std::vec;
+
+    // Iterator::find is a function which iterates over an iterator and searches for the first value
+    // which satisfies some condition.
+    // If none of the values satisfy the condition, it returns None. It's signature:
+
+    ///  ```
+    /// pub trait Iterator {
+    /// // The type being iterated over
+    /// type Item;
+    /// // `find` takes `&mut self` meaning the caller may be borrowed
+    /// // and modified, but not consumed.
+    /// fn find<P>(&mut self, predicate:P) -> Option<Self::Item> where
+    ///     // `FnMut` meaning any captured variable may at most be
+    ///     // modified, not consumed. `Self::Item` states it takes
+    ///     // arguments to the closure by reference.
+    ///     F: FnMut(&Self::Item) -> bool;
+    /// }
+    /// 
+    ///  ```
+ 
+    pub fn mod_main() {
+        let vec1 = vec![1, 2, 3];
+        let vec2 = vec![4, 5, 6];
+
+        // `iter()` for vecs yieds `&i32`.
+        let mut iter = vec1.iter();
+        // `into_iter` for vecs yieds `i32`.
+        let mut into_iter = vec2.into_iter();
+
+        // `iter()` yieds `&i32`, and we want to reference one of its item,
+        // so we have to destructure `&&i32` to `i32`.
+        println!("Find 2 in vec1 : {:?}", iter.find(|&&x|x == 2));
+
+        // `into_iter()` yieds `i32`, and we want to reference one of its item,
+        // so we have to destructure `&i32` to `i32`.
+        println!("Find 2 in vec2 : {:?}", into_iter.find(|&x|x==2));
+
+    }
 }
 // 9.3. Higher Order Functions
 mod higher_order_functions {
-    pub fn mod_main() {}
+    pub fn mod_main() {
+        // TODO::
+    }
 }
 // 9.4. Diverging functions
 mod diverging_functions {
-    pub fn mod_main() {}
+    pub fn mod_main() {
+        // TODO::
+    }
 }
 
 fn main() {
