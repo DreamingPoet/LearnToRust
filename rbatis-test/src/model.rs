@@ -23,6 +23,6 @@ pub struct BizActivity {
 /// make a rbatis
 pub async fn init_db() -> Rbatis {
     let rb = Rbatis::new();
-    rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:pwd%^123456^@114.115.234.236:3306/viligogo").unwrap();
+    rb.init(rbdc_mysql::driver::MysqlDriver {}, "mysql://root:xxx@114.115.234.236:3306/viligogo").unwrap();
     return rb;
 }
